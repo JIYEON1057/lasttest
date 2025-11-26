@@ -1,185 +1,162 @@
-	// 지우개 미리보기용 오버레이 캔버스 생성
-	let previewCircle = null;
-	let eraserSize = 20; // 전역으로 선언 이동
-	
-	function createPreviewCircle() {
-		const wrap = document.getElementById('canvas-wrap');
-		if (!previewCircle) {
-			previewCircle = document.createElement('canvas');
-			previewCircle.width = canvas.width;
-			previewCircle.height = canvas.height;
-			previewCircle.style.position = 'absolute';
-			previewCircle.style.left = '0px';
-			previewCircle.style.top = '0px';
-			previewCircle.style.pointerEvents = 'none';
-			previewCircle.style.zIndex = 5;
-			wrap.appendChild(previewCircle);
-		}
-	}
-	function updatePreviewCircle(x, y) {
-		if (!previewCircle) return;
-		const ctx2 = previewCircle.getContext('2d');
-		ctx2.clearRect(0, 0, previewCircle.width, previewCircle.height);
-		ctx2.beginPath();
-		ctx2.arc(x, y, eraserSize/2, 0, 2 * Math.PI);
-		ctx2.fillStyle = 'rgba(0,0,0,0.12)';
-		ctx2.strokeStyle = 'rgba(0,0,0,0.3)';
-		ctx2.fill();
-		ctx2.stroke();
-	}
-	function removePreviewCircle() {
-		if (previewCircle) {
-			previewCircle.parentNode.removeChild(previewCircle);
-			previewCircle = null;
-		}
-	}
-// 그림판(캔버스) 드로잉, 색상 선택, 지우개, 전체 지우기, 노래 생성 버튼 기능 구현
 window.addEventListener('DOMContentLoaded', () => {
+	// API 키 자동 설정
+	document.getElementById('api-key').value = 'YOUR_API_KEY_HERE';
+	
 	const canvas = document.getElementById('canvas');
-	if (!canvas) return;
-	const ctx = canvas.getContext('2d');
-	// 캔버스 배경을 흰색으로 초기화 (지우개가 투명하게 동작하도록)
-	ctx.save();
-	ctx.globalCompositeOperation = 'source-over';
-	ctx.fillStyle = '#fff';
+	const ctx = canvas.getContext('2d', { alpha: true });
+	
+	// 미리보기 캔버스 생성
+	const previewCanvas = document.createElement('canvas');
+	previewCanvas.width = canvas.width;
+	previewCanvas.height = canvas.height;
+	previewCanvas.style.position = 'absolute';
+	previewCanvas.style.left = '0px';
+	previewCanvas.style.top = '0px';
+	previewCanvas.style.pointerEvents = 'none';
+	previewCanvas.style.zIndex = 5;
+	document.getElementById('canvas-wrap').appendChild(previewCanvas);
+	const previewCtx = previewCanvas.getContext('2d');
+	
+	// 캔버스 초기화 (투명한 배경)
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	// 흰색 배경 추가
+	ctx.fillStyle = '#ffffff';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	ctx.restore();
-	let drawing = false;
-	let currentColor = '#ff0000ff';
-	let lastX = 0, lastY = 0;
-	let erasing = false;
 
+	let isDrawing = false;
+	let lastX = 0;
+	let lastY = 0;
+	let currentColor = '#ff0000';
+	let isErasing = false;
+	let eraserSize = 20;
+	let penWidth = 3;
 
-	// 색상 버튼 이벤트
-	document.querySelectorAll('.color-btn').forEach(btn => {
+	// ===== 색상 선택 =====
+	const colorBtns = document.querySelectorAll('.color-btn');
+	colorBtns.forEach((btn, index) => {
+		if (index === 0) btn.classList.add('active');
 		btn.addEventListener('click', function() {
-			erasing = false;
-			document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+			colorBtns.forEach(b => b.classList.remove('active'));
 			this.classList.add('active');
 			currentColor = this.getAttribute('data-color');
-			// 커스텀 컬러 선택기 비활성화
-			const customColor = document.getElementById('custom-color');
-			if (customColor) customColor.value = '#000000';
+			isErasing = false;
+			document.getElementById('eraser-size').style.display = 'none';
 		});
 	});
-	// 커스텀 색상 선택기 이벤트
+
+	// ===== 커스텀 색상 =====
 	const customColor = document.getElementById('custom-color');
-	if (customColor) {
-		customColor.addEventListener('input', function() {
-			erasing = false;
-			document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-			currentColor = this.value;
-		});
-	}
-	// 기본 색상 활성화
-	const firstColor = document.querySelector('.color-btn');
-	if (firstColor) firstColor.classList.add('active');
+	customColor.addEventListener('input', function() {
+		currentColor = this.value;
+		isErasing = false;
+		colorBtns.forEach(b => b.classList.remove('active'));
+		document.getElementById('eraser-size').style.display = 'none';
+	});
 
-	// 지우개 버튼
+	// ===== 펜 굵기 =====
+	const penSizeSelect = document.getElementById('pen-size');
+	penSizeSelect.addEventListener('change', (e) => {
+		penWidth = parseInt(e.target.value);
+	});
 
-	// 지우개 버튼
+	// ===== 지우개 =====
 	const eraserBtn = document.getElementById('eraser');
 	const eraserSizeSelect = document.getElementById('eraser-size');
+	
 	eraserBtn.addEventListener('click', () => {
-		erasing = true;
-		document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-		if (eraserSizeSelect) eraserSizeSelect.style.display = 'inline-block';
-		createPreviewCircle();
+		isErasing = true;
+		colorBtns.forEach(b => b.classList.remove('active'));
+		eraserSizeSelect.style.display = 'inline-block';
 	});
-	if (eraserSizeSelect) {
-		eraserSizeSelect.addEventListener('change', function() {
-			eraserSize = parseInt(this.value, 10);
-		});
-	}
 
-	// 전체 지우기
+	eraserSizeSelect.addEventListener('change', (e) => {
+		eraserSize = parseInt(e.target.value);
+	});
+
+	// ===== 전체 지우기 =====
 	document.getElementById('clear').addEventListener('click', () => {
-		ctx.save();
-		ctx.globalCompositeOperation = 'source-over';
-		ctx.fillStyle = '#fff';
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = '#ffffff';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		ctx.restore();
 	});
 
-	// 색상/펜 선택 시 지우개 크기 선택 숨김
-	document.querySelectorAll('.color-btn, #custom-color').forEach(el => {
-		el.addEventListener('click', () => {
-			if (eraserSizeSelect) eraserSizeSelect.style.display = 'none';
-			removePreviewCircle();
-		});
-	});
-
-	// 드로잉 이벤트
-
-	// 마우스 상태 추적 (캔버스 위에서만)
+	// ===== 마우스 드로잉 이벤트 =====
 	let mouseDown = false;
+	
 	canvas.addEventListener('mousedown', (e) => {
-		drawing = true;
+		isDrawing = true;
 		mouseDown = true;
-		[lastX, lastY] = [e.offsetX, e.offsetY];
+		lastX = e.offsetX;
+		lastY = e.offsetY;
 	});
-	window.addEventListener('mouseup', () => {
-		drawing = false;
+
+	document.addEventListener('mouseup', () => {
+		isDrawing = false;
 		mouseDown = false;
+		previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 	});
+
 	canvas.addEventListener('mouseleave', () => {
-		drawing = false;
-		removePreviewCircle();
+		isDrawing = false;
+		previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 	});
+
 	canvas.addEventListener('mouseenter', (e) => {
 		// 마우스가 눌린 상태로 다시 들어오면 드로잉 재개
 		if (mouseDown) {
-			drawing = true;
-			// 마우스 위치 갱신
-			const rect = canvas.getBoundingClientRect();
-			lastX = e.clientX - rect.left;
-			lastY = e.clientY - rect.top;
-		}
-		if (erasing) {
-			createPreviewCircle();
-			updatePreviewCircle(e.offsetX, e.offsetY);
+			isDrawing = true;
+			lastX = e.offsetX;
+			lastY = e.offsetY;
 		}
 	});
+
 	canvas.addEventListener('mousemove', (e) => {
-		// 미리보기 표시
-		if (erasing) {
-			createPreviewCircle();
-			updatePreviewCircle(e.offsetX, e.offsetY);
+		const x = e.offsetX;
+		const y = e.offsetY;
+
+		// 미리보기 업데이트 (캔버스 위에 있을 때만)
+		if (e.target === canvas) {
+			previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+			if (isErasing) {
+				previewCtx.beginPath();
+				previewCtx.arc(x, y, eraserSize / 2, 0, Math.PI * 2);
+				previewCtx.fillStyle = 'rgba(200, 200, 200, 0.3)';
+				previewCtx.fill();
+				previewCtx.strokeStyle = 'rgba(100, 100, 100, 0.6)';
+				previewCtx.lineWidth = 1;
+				previewCtx.stroke();
+			}
 		} else {
-			removePreviewCircle();
+			previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 		}
 
-		// 실제 드로잉 처리
-		if (!drawing) return;
+		if (!isDrawing) return;
 
-		console.log('Drawing:', {erasing, x: e.offsetX, y: e.offsetY, eraserSize}); // 디버그
-
-		if (erasing) {
-			// 지우개: 원형 영역을 투명하게 지움
-			const x = e.offsetX;
-			const y = e.offsetY;
-			const radius = eraserSize / 2;
+		if (isErasing) {
+			// 지우기: 원형 영역을 완전히 투명하게
 			ctx.save();
 			ctx.beginPath();
-			ctx.arc(x, y, radius, 0, Math.PI * 2);
+			ctx.arc(x, y, eraserSize / 2, 0, Math.PI * 2);
 			ctx.clip();
-			ctx.clearRect(x - radius, y - radius, eraserSize, eraserSize);
+			ctx.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
 			ctx.restore();
 		} else {
-			// 펜: 선으로 그림
+			// 그리기
 			ctx.strokeStyle = currentColor;
-			ctx.lineWidth = 3;
+			ctx.lineWidth = penWidth;
 			ctx.lineCap = 'round';
 			ctx.lineJoin = 'round';
 			ctx.beginPath();
 			ctx.moveTo(lastX, lastY);
-			ctx.lineTo(e.offsetX, e.offsetY);
+			ctx.lineTo(x, y);
 			ctx.stroke();
 		}
-		[lastX, lastY] = [e.offsetX, e.offsetY];
+
+		lastX = x;
+		lastY = y;
 	});
 
-	// 노래 생성 버튼 (Replicate AI 연동)
+	// ===== 노래 생성 (Replicate AI) =====
 	document.getElementById('generate-music').addEventListener('click', async () => {
 		const apiKeyInput = document.getElementById('api-key');
 		const apiKey = apiKeyInput.value.trim();
@@ -190,16 +167,11 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 
 		const musicResult = document.getElementById('music-result');
-		musicResult.innerHTML = 'AI가 그림을 분석하고 음악을 생성 중입니다...';
+		musicResult.innerHTML = 'AI가 음악을 생성 중입니다...';
 
 		try {
-			// 1. 그림을 base64로 변환
-			const imageData = canvas.toDataURL('image/png');
-			
-			// 2. 그림에 대한 설명 생성 (간단한 프롬프트 사용)
 			const prompt = "An abstract artwork. Generate ambient electronic music that represents this visual art. Make it peaceful and artistic.";
 			
-			// 3. Replicate API로 음악 생성 요청 (Riffusion 모델)
 			const response = await fetch('https://api.replicate.com/v1/predictions', {
 				method: 'POST',
 				headers: {
@@ -207,7 +179,7 @@ window.addEventListener('DOMContentLoaded', () => {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					version: '8cf61ea6c56afd61d129e79c9c1c3416b79f0e30a1194a4c99fd3e3b3e95a3ec', // Riffusion v3
+					version: '8cf61ea6c56afd61d129e79c9c1c3416b79f0e30a1194a4c99fd3e3b3e95a3ec',
 					input: {
 						prompt_a: prompt,
 						prompt_b: prompt,
@@ -218,18 +190,16 @@ window.addEventListener('DOMContentLoaded', () => {
 			});
 
 			if (!response.ok) {
-				throw new Error(`API 에러: ${response.status} ${response.statusText}`);
+				throw new Error(`API 에러: ${response.status}`);
 			}
 
 			const prediction = await response.json();
 			
-			// 4. 생성 상태 폴링
 			let result = prediction;
 			let attempts = 0;
-			const maxAttempts = 60; // 최대 60초 대기
 
-			while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < maxAttempts) {
-				await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+			while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < 60) {
+				await new Promise(resolve => setTimeout(resolve, 1000));
 				
 				const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
 					headers: {
@@ -242,20 +212,16 @@ window.addEventListener('DOMContentLoaded', () => {
 				musicResult.innerHTML = `생성 중... (${attempts}초)`;
 			}
 
-			// 5. 결과 표시
 			if (result.status === 'succeeded' && result.output) {
 				const audioUrl = result.output[0] || result.output;
 				musicResult.innerHTML = `
 					<b style="color:green;">✓ 음악 생성 완료!</b><br>
 					<audio controls style="margin-top:10px; width:100%; max-width:500px;">
 						<source src="${audioUrl}" type="audio/wav">
-						브라우저가 오디오를 지원하지 않습니다.
 					</audio>
 				`;
-			} else if (result.status === 'failed') {
-				throw new Error('음악 생성 실패: ' + (result.error || '알 수 없는 오류'));
 			} else {
-				throw new Error('음악 생성 시간 초과');
+				throw new Error('음악 생성 실패');
 			}
 
 		} catch (error) {

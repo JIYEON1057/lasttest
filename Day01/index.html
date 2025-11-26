@@ -4,7 +4,7 @@
     <head>
         <title>그림으로 노래 만들기 사이트</title>
         <link rel="stylesheet" href="style.css">
-        <script defer src="../index.js"></script>
+        <script defer src="index.js"></script>
     </head>
     <body>
         <h1>그림으로 노래 만들기 사이트</h1>
@@ -18,6 +18,12 @@
             <span class="color-btn" style="background:purple" data-color="#800080"></span>
             <span class="color-btn" style="background:black" data-color="#000000"></span>
             <input type="color" id="custom-color">
+            <select id="pen-size">
+                <option value="1">매우 얇게</option>
+                <option value="3" selected>보통</option>
+                <option value="5">굵게</option>
+                <option value="10">매우 굵게</option>
+            </select>
             <button id="eraser">지우개</button>
             <select id="eraser-size">
                 <option value="10">얇게</option>

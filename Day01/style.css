@@ -51,6 +51,11 @@ body {
     margin-left: 5px;
 }
 
+/* 펜 굵기 선택 */
+#pen-size {
+    margin-left: 5px;
+}
+
 /* API 키 입력창 */
 #api-key {
     margin-left: 10px;
