@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>그림으로 노래 만들기 사이트</title>
+        <style>
+            body { font-family: sans-serif; text-align: center; }
+            #toolbar { margin-bottom: 10px; }
+            #canvas { border: 1px solid #888; cursor: crosshair; }
+            .color-btn { width: 24px; height: 24px; border: 1px solid #ccc; margin: 0 2px; cursor: pointer; display: inline-block; }
+            .active { border: 2px solid #333; }
+        </style>
+        <script defer src="../001.js"></script>
+    </head>
+    <body>
+        <h1>그림으로 노래 만들기 사이트</h1>
+        <div id="toolbar">
+            <span>색상:</span>
+            <span class="color-btn" style="background:red" data-color="#ff0000"></span>
+            <span class="color-btn" style="background:orange" data-color="#ffa500"></span>
+            <span class="color-btn" style="background:yellow" data-color="#ffff00"></span>
+            <span class="color-btn" style="background:green" data-color="#008000"></span>
+            <span class="color-btn" style="background:blue" data-color="#0000ff"></span>
+            <span class="color-btn" style="background:purple" data-color="#800080"></span>
+            <span class="color-btn" style="background:black" data-color="#000000"></span>
+            <input type="color" id="custom-color" style="vertical-align: middle; width:32px; height:24px; border:none; margin-left:8px;">
+            <button id="eraser">지우개</button>
+            <select id="eraser-size" style="display:none; margin-left:5px;">
+                <option value="10">얇게</option>
+                <option value="20" selected>보통</option>
+                <option value="40">굵게</option>
+                <option value="80">매우 굵게</option>
+            </select>
+            <button id="clear">전체 지우기</button>
+        </div>
+        <div id="canvas-wrap" style="position:relative; display:inline-block;">
+            <canvas id="canvas" width="1000" height="600"></canvas>
+        </div>
+        <div style="margin-top:15px;">
+            <button id="generate-music">노래 생성</button>
+        </div>
+        <div id="music-result" style="margin-top:20px;"></div>
+        <!-- script 태그 중복 제거 -->
+    </body>
+</html>
