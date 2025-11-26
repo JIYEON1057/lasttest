@@ -179,16 +179,88 @@ window.addEventListener('DOMContentLoaded', () => {
 		[lastX, lastY] = [e.offsetX, e.offsetY];
 	});
 
-	// 노래 생성 버튼
+	// 노래 생성 버튼 (Replicate AI 연동)
 	document.getElementById('generate-music').addEventListener('click', async () => {
-		// 그림 데이터를 base64로 추출
-		const imageData = canvas.toDataURL('image/png');
-		// 실제 AI 연동 부분 (예시)
-		document.getElementById('music-result').innerHTML = 'AI가 그림을 분석하여 노래를 생성 중입니다... (데모)';
-		// 실제로는 서버에 imageData를 전송하고, 음악 생성 결과를 받아야 함
-		// 아래는 데모용 (실제 AI 연동 필요)
-		setTimeout(() => {
-			document.getElementById('music-result').innerHTML = '<b>노래 생성 완료!</b><br><audio controls src="demo-music.mp3"></audio><br>(실제 AI 연동 필요)';
-		}, 2000);
+		const apiKeyInput = document.getElementById('api-key');
+		const apiKey = apiKeyInput.value.trim();
+		
+		if (!apiKey) {
+			document.getElementById('music-result').innerHTML = '<span style="color:red;">API 키를 입력하세요!</span>';
+			return;
+		}
+
+		const musicResult = document.getElementById('music-result');
+		musicResult.innerHTML = 'AI가 그림을 분석하고 음악을 생성 중입니다...';
+
+		try {
+			// 1. 그림을 base64로 변환
+			const imageData = canvas.toDataURL('image/png');
+			
+			// 2. 그림에 대한 설명 생성 (간단한 프롬프트 사용)
+			const prompt = "An abstract artwork. Generate ambient electronic music that represents this visual art. Make it peaceful and artistic.";
+			
+			// 3. Replicate API로 음악 생성 요청 (Riffusion 모델)
+			const response = await fetch('https://api.replicate.com/v1/predictions', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Token ${apiKey}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					version: '8cf61ea6c56afd61d129e79c9c1c3416b79f0e30a1194a4c99fd3e3b3e95a3ec', // Riffusion v3
+					input: {
+						prompt_a: prompt,
+						prompt_b: prompt,
+						denoising: 0.75,
+						seed: Math.floor(Math.random() * 1000000)
+					}
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error(`API 에러: ${response.status} ${response.statusText}`);
+			}
+
+			const prediction = await response.json();
+			
+			// 4. 생성 상태 폴링
+			let result = prediction;
+			let attempts = 0;
+			const maxAttempts = 60; // 최대 60초 대기
+
+			while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < maxAttempts) {
+				await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+				
+				const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+					headers: {
+						'Authorization': `Token ${apiKey}`
+					}
+				});
+
+				result = await statusResponse.json();
+				attempts++;
+				musicResult.innerHTML = `생성 중... (${attempts}초)`;
+			}
+
+			// 5. 결과 표시
+			if (result.status === 'succeeded' && result.output) {
+				const audioUrl = result.output[0] || result.output;
+				musicResult.innerHTML = `
+					<b style="color:green;">✓ 음악 생성 완료!</b><br>
+					<audio controls style="margin-top:10px; width:100%; max-width:500px;">
+						<source src="${audioUrl}" type="audio/wav">
+						브라우저가 오디오를 지원하지 않습니다.
+					</audio>
+				`;
+			} else if (result.status === 'failed') {
+				throw new Error('음악 생성 실패: ' + (result.error || '알 수 없는 오류'));
+			} else {
+				throw new Error('음악 생성 시간 초과');
+			}
+
+		} catch (error) {
+			console.error('오류:', error);
+			musicResult.innerHTML = `<span style="color:red;">오류: ${error.message}</span>`;
+		}
 	});
 });
