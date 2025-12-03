@@ -1,74 +1,476 @@
-/* 기본 스타일 */
+/* ===== 기본 스타일 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ===== 헤더 ===== */
+.header {
     text-align: center;
+    margin-bottom: 25px;
+    animation: fadeInDown 0.8s ease;
 }
 
-/* 캔버스 */
-#canvas {
-    border: 1px solid #888;
-    cursor: crosshair;
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 8px;
 }
 
-/* 도구 모음 */
+.logo i {
+    font-size: 2.5rem;
+    color: #fff;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: bounce 2s infinite;
+}
+
+.logo h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+/* ===== 메인 컨텐츠 ===== */
+.main-content {
+    background: rgba(255,255,255,0.95);
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.8s ease;
+}
+
+/* ===== 툴바 ===== */
+.toolbar-container {
+    margin-bottom: 20px;
+}
+
 #toolbar {
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-/* 색상 선택 버튼 */
+.tool-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tool-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tool-label i {
+    color: #7950f2;
+}
+
+.tool-divider {
+    width: 1px;
+    height: 35px;
+    background: linear-gradient(to bottom, transparent, #dee2e6, transparent);
+}
+
+/* ===== 색상 팔레트 ===== */
+.color-palette {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .color-btn {
-    width: 24px;
-    height: 24px;
-    border: 1px solid #ccc;
-    margin: 0 2px;
-    cursor: pointer;
-    display: inline-block;
-}
-
-/* 활성 색상 버튼 */
-.color-btn.active {
-    border: 2px solid #333;
-}
-
-/* 캔버스 래퍼 */
-#canvas-wrap {
-    position: relative;
-    display: inline-block;
-}
-
-/* 커스텀 컬러 선택기 */
-#custom-color {
-    vertical-align: middle;
     width: 32px;
-    height: 24px;
+    height: 32px;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+.color-btn:hover {
+    transform: scale(1.15) translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.color-btn.active {
+    border-color: #fff;
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px #7950f2, 0 6px 20px rgba(0,0,0,0.25);
+}
+
+#custom-color {
+    width: 32px;
+    height: 32px;
     border: none;
-    margin-left: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+    padding: 0;
+    overflow: hidden;
+}
+
+#custom-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#custom-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+/* ===== 셀렉트 박스 ===== */
+select {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #495057;
+}
+
+select:hover {
+    border-color: #7950f2;
+}
+
+select:focus {
+    outline: none;
+    border-color: #7950f2;
+    box-shadow: 0 0 0 3px rgba(121, 80, 242, 0.2);
+}
+
+/* ===== 도구 버튼 ===== */
+.tool-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tool-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #7950f2, #845ef7);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(121, 80, 242, 0.3);
+}
+
+.tool-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(121, 80, 242, 0.4);
+}
+
+.tool-btn:active {
+    transform: translateY(0);
+}
+
+.tool-btn.danger {
+    background: linear-gradient(135deg, #fa5252, #e03131);
+    box-shadow: 0 4px 15px rgba(250, 82, 82, 0.3);
+}
+
+.tool-btn.danger:hover {
+    box-shadow: 0 6px 20px rgba(250, 82, 82, 0.4);
+}
+
+.tool-btn.active {
+    background: linear-gradient(135deg, #40c057, #37b24d);
+    box-shadow: 0 0 0 3px rgba(64, 192, 87, 0.3);
 }
 
 /* 지우개 크기 선택 */
 #eraser-size {
     display: none;
-    margin-left: 5px;
 }
 
-/* 펜 굵기 선택 */
-#pen-size {
-    margin-left: 5px;
+/* ===== 캔버스 ===== */
+#canvas-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-/* API 키 입력창 */
-#api-key {
-    margin-left: 10px;
-    padding: 5px;
-    width: 300px;
+#canvas {
+    border: none;
+    border-radius: 16px;
+    cursor: crosshair;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.05), 0 8px 30px rgba(0,0,0,0.1);
+    background: #fff;
 }
 
-/* 음악 생성 버튼 영역 */
+.canvas-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #adb5bd;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.canvas-hint i {
+    font-size: 1.5rem;
+}
+
+/* ===== 음악 컨트롤 ===== */
 .music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.api-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 5px 5px 15px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.api-section:focus-within {
+    border-color: #7950f2;
+    box-shadow: 0 0 0 3px rgba(121, 80, 242, 0.2);
+}
+
+.api-section i {
+    color: #868e96;
+}
+
+#api-key {
+    border: none;
+    background: transparent;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    width: 280px;
+    outline: none;
+}
+
+#api-key::placeholder {
+    color: #adb5bd;
+}
+
+.generate-btn {
+    position: relative;
+    padding: 15px 35px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #7950f2, #9775fa, #845ef7);
+    background-size: 200% 200%;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 25px rgba(121, 80, 242, 0.4);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    animation: gradient 3s ease infinite;
+}
+
+.generate-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(121, 80, 242, 0.5);
+}
+
+.generate-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.generate-btn i {
+    font-size: 1.2rem;
+    animation: pulse 1.5s infinite;
+}
+
+.btn-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: glow 3s infinite;
+}
+
+/* ===== 음악 결과 ===== */
+#music-result {
+    text-align: center;
+    padding: 20px;
+    border-radius: 16px;
+    min-height: 60px;
+}
+
+#music-result audio {
+    width: 100%;
+    max-width: 500px;
     margin-top: 15px;
 }
 
-/* 음악 결과 영역 */
-#music-result {
-    margin-top: 20px;
+/* ===== 푸터 ===== */
+.footer {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.9rem;
+}
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes glow {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .logo h1 {
+        font-size: 1.6rem;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+    
+    #toolbar {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .tool-divider {
+        display: none;
+    }
+    
+    #canvas {
+        width: 100%;
+        height: auto;
+    }
+    
+    #api-key {
+        width: 200px;
+    }
+    
+    .generate-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
 }

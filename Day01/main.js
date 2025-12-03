@@ -4,6 +4,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	
 	const canvas = document.getElementById('canvas');
 	const ctx = canvas.getContext('2d', { alpha: true });
+	const canvasHint = document.querySelector('.canvas-hint');
 	
 	// 미리보기 캔버스 생성
 	const previewCanvas = document.createElement('canvas');
@@ -14,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	previewCanvas.style.top = '0px';
 	previewCanvas.style.pointerEvents = 'none';
 	previewCanvas.style.zIndex = 5;
+	previewCanvas.style.borderRadius = '16px';
 	document.getElementById('canvas-wrap').appendChild(previewCanvas);
 	const previewCtx = previewCanvas.getContext('2d');
 	
@@ -26,10 +28,19 @@ window.addEventListener('DOMContentLoaded', () => {
 	let isDrawing = false;
 	let lastX = 0;
 	let lastY = 0;
-	let currentColor = '#ff0000';
+	let currentColor = '#ff6b6b';
 	let isErasing = false;
 	let eraserSize = 20;
 	let penWidth = 3;
+	let hasDrawn = false;
+
+	// 힌트 숨기기 함수
+	function hideHint() {
+		if (!hasDrawn && canvasHint) {
+			canvasHint.style.opacity = '0';
+			hasDrawn = true;
+		}
+	}
 
 	// ===== 색상 선택 =====
 	const colorBtns = document.querySelectorAll('.color-btn');
@@ -40,6 +51,7 @@ window.addEventListener('DOMContentLoaded', () => {
 			this.classList.add('active');
 			currentColor = this.getAttribute('data-color');
 			isErasing = false;
+			document.getElementById('eraser').classList.remove('active');
 			document.getElementById('eraser-size').style.display = 'none';
 		});
 	});
@@ -50,6 +62,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		currentColor = this.value;
 		isErasing = false;
 		colorBtns.forEach(b => b.classList.remove('active'));
+		document.getElementById('eraser').classList.remove('active');
 		document.getElementById('eraser-size').style.display = 'none';
 	});
 
@@ -65,6 +78,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	
 	eraserBtn.addEventListener('click', () => {
 		isErasing = true;
+		eraserBtn.classList.add('active');
 		colorBtns.forEach(b => b.classList.remove('active'));
 		eraserSizeSelect.style.display = 'inline-block';
 	});
@@ -78,6 +92,11 @@ window.addEventListener('DOMContentLoaded', () => {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = '#ffffff';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		// 힌트 다시 표시
+		if (canvasHint) {
+			canvasHint.style.opacity = '1';
+			hasDrawn = false;
+		}
 	});
 
 	// ===== 마우스 드로잉 이벤트 =====
@@ -88,6 +107,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		mouseDown = true;
 		lastX = e.offsetX;
 		lastY = e.offsetY;
+		hideHint();
 	});
 
 	document.addEventListener('mouseup', () => {
