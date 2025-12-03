@@ -1,252 +1,339 @@
 window.addEventListener('DOMContentLoaded', () => {
-	// API 키 자동 설정
-	document.getElementById('api-key').value = 'YOUR_API_KEY_HERE';
-	
-	const canvas = document.getElementById('canvas');
-	const ctx = canvas.getContext('2d', { alpha: true });
-	const canvasHint = document.querySelector('.canvas-hint');
-	
-	// 미리보기 캔버스 생성
-	const previewCanvas = document.createElement('canvas');
-	previewCanvas.width = canvas.width;
-	previewCanvas.height = canvas.height;
-	previewCanvas.style.position = 'absolute';
-	previewCanvas.style.left = '0px';
-	previewCanvas.style.top = '0px';
-	previewCanvas.style.pointerEvents = 'none';
-	previewCanvas.style.zIndex = 5;
-	previewCanvas.style.borderRadius = '16px';
-	document.getElementById('canvas-wrap').appendChild(previewCanvas);
-	const previewCtx = previewCanvas.getContext('2d');
-	
-	// 캔버스 초기화 (투명한 배경)
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	// 흰색 배경 추가
-	ctx.fillStyle = '#ffffff';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const canvasHint = document.getElementById('canvas-hint');
+    
+    // 캔버스 크기를 CSS 크기에 맞춤
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        
+        // 현재 그림 저장
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // 캔버스 크기 설정
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        // 스케일 조정
+        ctx.scale(dpr, dpr);
+        
+        // 흰색 배경
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        
+        // 이전 그림 복원 시도
+        try {
+            ctx.putImageData(imageData, 0, 0);
+        } catch(e) {}
+    }
+    
+    resizeCanvas();
 
-	let isDrawing = false;
-	let lastX = 0;
-	let lastY = 0;
-	let currentColor = '#ff6b6b';
-	let isErasing = false;
-	let eraserSize = 20;
-	let penWidth = 3;
-	let hasDrawn = false;
+    // 상태 변수
+    let isDrawing = false;
+    let mouseDown = false;
+    let lastX = 0;
+    let lastY = 0;
+    let currentColor = '#FF6B6B';
+    let isErasing = false;
+    let eraserSize = 20;
+    let penWidth = 5;
 
-	// 힌트 숨기기 함수
-	function hideHint() {
-		if (!hasDrawn && canvasHint) {
-			canvasHint.style.opacity = '0';
-			hasDrawn = true;
-		}
-	}
+    // 마우스 좌표 계산 (CSS 크기 기준)
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
 
-	// ===== 색상 선택 =====
-	const colorBtns = document.querySelectorAll('.color-btn');
-	colorBtns.forEach((btn, index) => {
-		if (index === 0) btn.classList.add('active');
-		btn.addEventListener('click', function() {
-			colorBtns.forEach(b => b.classList.remove('active'));
-			this.classList.add('active');
-			currentColor = this.getAttribute('data-color');
-			isErasing = false;
-			document.getElementById('eraser').classList.remove('active');
-			document.getElementById('eraser-size').style.display = 'none';
-		});
-	});
+    // ===== 색상 선택 =====
+    const colorBtns = document.querySelectorAll('.color-btn');
+    const customColor = document.getElementById('custom-color');
+    const penTool = document.getElementById('pen-tool');
+    const eraserBtn = document.getElementById('eraser');
+    const clearBtn = document.getElementById('clear');
+    const penSizeSlider = document.getElementById('pen-size');
+    const eraserSizeSlider = document.getElementById('eraser-size');
+    const eraserSizeSection = document.getElementById('eraser-size-section');
 
-	// ===== 커스텀 색상 =====
-	const customColor = document.getElementById('custom-color');
-	customColor.addEventListener('input', function() {
-		currentColor = this.value;
-		isErasing = false;
-		colorBtns.forEach(b => b.classList.remove('active'));
-		document.getElementById('eraser').classList.remove('active');
-		document.getElementById('eraser-size').style.display = 'none';
-	});
+    // 색상 버튼 클릭
+    colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            colorBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentColor = this.getAttribute('data-color');
+            switchToPen();
+        });
+    });
 
-	// ===== 펜 굵기 =====
-	const penSizeSelect = document.getElementById('pen-size');
-	penSizeSelect.addEventListener('change', (e) => {
-		penWidth = parseInt(e.target.value);
-	});
+    // 커스텀 색상
+    customColor.addEventListener('input', function() {
+        currentColor = this.value;
+        colorBtns.forEach(b => b.classList.remove('active'));
+        switchToPen();
+    });
 
-	// ===== 지우개 =====
-	const eraserBtn = document.getElementById('eraser');
-	const eraserSizeSelect = document.getElementById('eraser-size');
-	
-	eraserBtn.addEventListener('click', () => {
-		isErasing = true;
-		eraserBtn.classList.add('active');
-		colorBtns.forEach(b => b.classList.remove('active'));
-		eraserSizeSelect.style.display = 'inline-block';
-	});
+    // 펜 도구
+    penTool.addEventListener('click', switchToPen);
 
-	eraserSizeSelect.addEventListener('change', (e) => {
-		eraserSize = parseInt(e.target.value);
-	});
+    function switchToPen() {
+        isErasing = false;
+        penTool.classList.add('active');
+        eraserBtn.classList.remove('active');
+        eraserSizeSection.classList.remove('show');
+    }
 
-	// ===== 전체 지우기 =====
-	document.getElementById('clear').addEventListener('click', () => {
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = '#ffffff';
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		// 힌트 다시 표시
-		if (canvasHint) {
-			canvasHint.style.opacity = '1';
-			hasDrawn = false;
-		}
-	});
+    // 지우개
+    eraserBtn.addEventListener('click', () => {
+        isErasing = true;
+        eraserBtn.classList.add('active');
+        penTool.classList.remove('active');
+        colorBtns.forEach(b => b.classList.remove('active'));
+        eraserSizeSection.classList.add('show');
+    });
 
-	// ===== 마우스 드로잉 이벤트 =====
-	let mouseDown = false;
-	
-	canvas.addEventListener('mousedown', (e) => {
-		isDrawing = true;
-		mouseDown = true;
-		lastX = e.offsetX;
-		lastY = e.offsetY;
-		hideHint();
-	});
+    // 전체 지우기
+    clearBtn.addEventListener('click', () => {
+        const rect = canvas.getBoundingClientRect();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+        canvasHint.classList.remove('hidden');
+    });
 
-	document.addEventListener('mouseup', () => {
-		isDrawing = false;
-		mouseDown = false;
-		previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-	});
+    // 펜 크기 슬라이더
+    penSizeSlider.addEventListener('input', function() {
+        penWidth = parseInt(this.value);
+        document.querySelector('.size-value').textContent = penWidth + 'px';
+    });
 
-	canvas.addEventListener('mouseleave', () => {
-		isDrawing = false;
-		previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-	});
+    // 지우개 크기 슬라이더
+    eraserSizeSlider.addEventListener('input', function() {
+        eraserSize = parseInt(this.value);
+        document.querySelector('.eraser-size-value').textContent = eraserSize + 'px';
+    });
 
-	canvas.addEventListener('mouseenter', (e) => {
-		// 마우스가 눌린 상태로 다시 들어오면 드로잉 재개
-		if (mouseDown) {
-			isDrawing = true;
-			lastX = e.offsetX;
-			lastY = e.offsetY;
-		}
-	});
+    // ===== 드로잉 이벤트 =====
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', pauseDrawing);
+    canvas.addEventListener('mouseenter', resumeDrawing);
+    
+    // 마우스가 캔버스 밖에서도 그리기 유지
+    document.addEventListener('mousemove', drawOutside);
+    document.addEventListener('mouseup', stopDrawingGlobal);
 
-	canvas.addEventListener('mousemove', (e) => {
-		const x = e.offsetX;
-		const y = e.offsetY;
+    // 터치 지원
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', stopDrawing);
 
-		// 미리보기 업데이트 (캔버스 위에 있을 때만)
-		if (e.target === canvas) {
-			previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-			if (isErasing) {
-				previewCtx.beginPath();
-				previewCtx.arc(x, y, eraserSize / 2, 0, Math.PI * 2);
-				previewCtx.fillStyle = 'rgba(200, 200, 200, 0.3)';
-				previewCtx.fill();
-				previewCtx.strokeStyle = 'rgba(100, 100, 100, 0.6)';
-				previewCtx.lineWidth = 1;
-				previewCtx.stroke();
-			}
-		} else {
-			previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-		}
+    function startDrawing(e) {
+        isDrawing = true;
+        mouseDown = true;
+        const pos = getMousePos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        canvasHint.classList.add('hidden');
+    }
 
-		if (!isDrawing) return;
+    function draw(e) {
+        if (!isDrawing) return;
 
-		if (isErasing) {
-			// 지우기: 원형 영역을 완전히 투명하게
-			ctx.save();
-			ctx.beginPath();
-			ctx.arc(x, y, eraserSize / 2, 0, Math.PI * 2);
-			ctx.clip();
-			ctx.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
-			ctx.restore();
-		} else {
-			// 그리기
-			ctx.strokeStyle = currentColor;
-			ctx.lineWidth = penWidth;
-			ctx.lineCap = 'round';
-			ctx.lineJoin = 'round';
-			ctx.beginPath();
-			ctx.moveTo(lastX, lastY);
-			ctx.lineTo(x, y);
-			ctx.stroke();
-		}
+        const pos = getMousePos(e);
+        const x = pos.x;
+        const y = pos.y;
 
-		lastX = x;
-		lastY = y;
-	});
+        drawLine(lastX, lastY, x, y);
+        lastX = x;
+        lastY = y;
+    }
+    
+    function drawOutside(e) {
+        if (!mouseDown || !isDrawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // 캔버스 영역 내로 좌표 제한
+        const clampedX = Math.max(0, Math.min(x, rect.width));
+        const clampedY = Math.max(0, Math.min(y, rect.height));
+        
+        drawLine(lastX, lastY, clampedX, clampedY);
+        lastX = clampedX;
+        lastY = clampedY;
+    }
+    
+    function drawLine(fromX, fromY, toX, toY) {
+        if (isErasing) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(toX, toY, eraserSize / 2, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(toX - eraserSize / 2, toY - eraserSize / 2, eraserSize, eraserSize);
+            ctx.restore();
+        } else {
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = penWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+        }
+    }
 
-	// ===== 노래 생성 (Replicate AI) =====
-	document.getElementById('generate-music').addEventListener('click', async () => {
-		const apiKeyInput = document.getElementById('api-key');
-		const apiKey = apiKeyInput.value.trim();
-		
-		if (!apiKey) {
-			document.getElementById('music-result').innerHTML = '<span style="color:red;">API 키를 입력하세요!</span>';
-			return;
-		}
+    function stopDrawing() {
+        isDrawing = false;
+        mouseDown = false;
+    }
+    
+    function stopDrawingGlobal() {
+        mouseDown = false;
+        isDrawing = false;
+    }
+    
+    function pauseDrawing() {
+        // 마우스가 캔버스를 벗어나도 mouseDown 상태 유지
+    }
+    
+    function resumeDrawing(e) {
+        if (mouseDown) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+    }
 
-		const musicResult = document.getElementById('music-result');
-		musicResult.innerHTML = 'AI가 음악을 생성 중입니다...';
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        lastX = touch.clientX - rect.left;
+        lastY = touch.clientY - rect.top;
+        isDrawing = true;
+        mouseDown = true;
+        canvasHint.classList.add('hidden');
+    }
 
-		try {
-			const prompt = "An abstract artwork. Generate ambient electronic music that represents this visual art. Make it peaceful and artistic.";
-			
-			const response = await fetch('https://api.replicate.com/v1/predictions', {
-				method: 'POST',
-				headers: {
-					'Authorization': `Token ${apiKey}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					version: '8cf61ea6c56afd61d129e79c9c1c3416b79f0e30a1194a4c99fd3e3b3e95a3ec',
-					input: {
-						prompt_a: prompt,
-						prompt_b: prompt,
-						denoising: 0.75,
-						seed: Math.floor(Math.random() * 1000000)
-					}
-				})
-			});
+    function handleTouchMove(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
 
-			if (!response.ok) {
-				throw new Error(`API 에러: ${response.status}`);
-			}
+        drawLine(lastX, lastY, x, y);
+        lastX = x;
+        lastY = y;
+    }
 
-			const prediction = await response.json();
-			
-			let result = prediction;
-			let attempts = 0;
+    // ===== API 키 보기/숨기기 =====
+    const apiKeyInput = document.getElementById('api-key');
+    const showKeyBtn = document.getElementById('show-key');
+    
+    showKeyBtn.addEventListener('click', () => {
+        if (apiKeyInput.type === 'password') {
+            apiKeyInput.type = 'text';
+            showKeyBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+            apiKeyInput.type = 'password';
+            showKeyBtn.innerHTML = '<i class="fas fa-eye"></i>';
+        }
+    });
 
-			while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < 60) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-				
-				const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
-					headers: {
-						'Authorization': `Token ${apiKey}`
-					}
-				});
+    // ===== 음악 생성 =====
+    const generateBtn = document.getElementById('generate-music');
+    const musicResult = document.getElementById('music-result');
 
-				result = await statusResponse.json();
-				attempts++;
-				musicResult.innerHTML = `생성 중... (${attempts}초)`;
-			}
+    generateBtn.addEventListener('click', async () => {
+        const apiKey = apiKeyInput.value.trim();
+        
+        if (!apiKey) {
+            showResult('error', 'API 키를 입력해주세요.');
+            return;
+        }
 
-			if (result.status === 'succeeded' && result.output) {
-				const audioUrl = result.output[0] || result.output;
-				musicResult.innerHTML = `
-					<b style="color:green;">✓ 음악 생성 완료!</b><br>
-					<audio controls style="margin-top:10px; width:100%; max-width:500px;">
-						<source src="${audioUrl}" type="audio/wav">
-					</audio>
-				`;
-			} else {
-				throw new Error('음악 생성 실패');
-			}
+        generateBtn.classList.add('loading');
+        generateBtn.disabled = true;
 
-		} catch (error) {
-			console.error('오류:', error);
-			musicResult.innerHTML = `<span style="color:red;">오류: ${error.message}</span>`;
-		}
-	});
+        try {
+            const prompt = "An abstract colorful artwork. Generate ambient electronic music that represents this visual art. Make it peaceful and artistic with soft melodies.";
+            
+            const response = await fetch('https://api.replicate.com/v1/predictions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    version: '8cf61ea6c56afd61d129e79c9c1c3416b79f0e30a1194a4c99fd3e3b3e95a3ec',
+                    input: {
+                        prompt_a: prompt,
+                        prompt_b: prompt,
+                        denoising: 0.75,
+                        seed: Math.floor(Math.random() * 1000000)
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API 에러: ${response.status}`);
+            }
+
+            const prediction = await response.json();
+            let result = prediction;
+            let attempts = 0;
+
+            while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < 120) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+                    headers: { 'Authorization': `Token ${apiKey}` }
+                });
+
+                result = await statusResponse.json();
+                attempts++;
+            }
+
+            if (result.status === 'succeeded' && result.output) {
+                const audioUrl = result.output[0] || result.output;
+                showResult('success', `
+                    <div class="result-title">
+                        <i class="fas fa-check-circle"></i>
+                        <span>음악이 생성되었습니다!</span>
+                    </div>
+                    <audio controls>
+                        <source src="${audioUrl}" type="audio/wav">
+                    </audio>
+                `);
+            } else {
+                throw new Error('음악 생성에 실패했습니다.');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            showResult('error', `오류: ${error.message}`);
+        } finally {
+            generateBtn.classList.remove('loading');
+            generateBtn.disabled = false;
+        }
+    });
+
+    function showResult(type, content) {
+        musicResult.classList.add('show');
+        if (type === 'error') {
+            musicResult.innerHTML = `<div style="color: #FF6B6B;"><i class="fas fa-exclamation-circle"></i> ${content}</div>`;
+        } else {
+            musicResult.innerHTML = content;
+        }
+    }
 });

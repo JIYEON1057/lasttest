@@ -1,100 +1,136 @@
 <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art to Music | 그림으로 음악 만들기</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script defer src="main.js"></script>
+</head>
+<body>
+    <!-- 배경 애니메이션 -->
+    <div class="bg-animation">
+        <div class="floating-shape shape1"></div>
+        <div class="floating-shape shape2"></div>
+        <div class="floating-shape shape3"></div>
+        <div class="floating-shape shape4"></div>
+    </div>
 
-<html>
-    <head>
-        <title>🎨 그림으로 노래 만들기</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-        <script defer src="index.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <header class="header">
+    <div class="app-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
                 <div class="logo">
-                    <i class="fas fa-palette"></i>
-                    <h1>그림으로 노래 만들기</h1>
-                </div>
-                <p class="subtitle">당신의 그림이 아름다운 음악이 됩니다 ✨</p>
-            </header>
-
-            <div class="main-content">
-                <div class="toolbar-container">
-                    <div id="toolbar">
-                        <div class="tool-section">
-                            <div class="tool-label"><i class="fas fa-fill-drip"></i> 색상</div>
-                            <div class="color-palette">
-                                <span class="color-btn" style="background: linear-gradient(135deg, #ff6b6b, #ee5a5a)" data-color="#ff6b6b"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #ffa94d, #ff922b)" data-color="#ffa94d"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #ffd43b, #fab005)" data-color="#ffd43b"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #69db7c, #51cf66)" data-color="#69db7c"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #4dabf7, #339af0)" data-color="#4dabf7"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #9775fa, #845ef7)" data-color="#9775fa"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #f783ac, #e64980)" data-color="#f783ac"></span>
-                                <span class="color-btn" style="background: linear-gradient(135deg, #495057, #343a40)" data-color="#495057"></span>
-                                <input type="color" id="custom-color" title="커스텀 색상">
-                            </div>
-                        </div>
-                        
-                        <div class="tool-divider"></div>
-                        
-                        <div class="tool-section">
-                            <div class="tool-label"><i class="fas fa-pen"></i> 펜 굵기</div>
-                            <select id="pen-size">
-                                <option value="1">● 매우 얇게</option>
-                                <option value="3" selected>●● 보통</option>
-                                <option value="5">●●● 굵게</option>
-                                <option value="10">●●●● 매우 굵게</option>
-                            </select>
-                        </div>
-                        
-                        <div class="tool-divider"></div>
-                        
-                        <div class="tool-section">
-                            <div class="tool-label"><i class="fas fa-eraser"></i> 도구</div>
-                            <div class="tool-buttons">
-                                <button id="eraser" class="tool-btn">
-                                    <i class="fas fa-eraser"></i> 지우개
-                                </button>
-                                <select id="eraser-size">
-                                    <option value="10">작게</option>
-                                    <option value="20" selected>보통</option>
-                                    <option value="40">크게</option>
-                                    <option value="80">매우 크게</option>
-                                </select>
-                                <button id="clear" class="tool-btn danger">
-                                    <i class="fas fa-trash-alt"></i> 전체 지우기
-                                </button>
-                            </div>
-                        </div>
+                    <div class="logo-icon">
+                        <i class="fas fa-waveform-lines"></i>
                     </div>
+                    <span class="logo-text">Art<span class="highlight">2</span>Music</span>
                 </div>
-
-                <div id="canvas-wrap">
-                    <canvas id="canvas" width="1000" height="550"></canvas>
-                    <div class="canvas-hint">
-                        <i class="fas fa-paint-brush"></i> 여기에 자유롭게 그림을 그려보세요!
-                    </div>
-                </div>
-
-                <div class="music-controls">
-                    <div class="api-section">
-                        <i class="fas fa-key"></i>
-                        <input type="text" id="api-key" placeholder="Replicate API 키를 입력하세요">
-                    </div>
-                    <button id="generate-music" class="generate-btn">
-                        <i class="fas fa-music"></i>
-                        <span>노래 생성하기</span>
-                        <div class="btn-glow"></div>
-                    </button>
-                </div>
-
-                <div id="music-result"></div>
             </div>
 
-            <footer class="footer">
-                <p>🎵 그림의 색상과 위치가 멜로디가 됩니다</p>
-            </footer>
-        </div>
-    </body>
+            <div class="tools-panel">
+                <div class="panel-title">
+                    <i class="fas fa-brush"></i>
+                    <span>브러시</span>
+                </div>
+                
+                <div class="color-section">
+                    <div class="color-grid">
+                        <button class="color-btn active" data-color="#FF6B6B" style="--btn-color: #FF6B6B"></button>
+                        <button class="color-btn" data-color="#4ECDC4" style="--btn-color: #4ECDC4"></button>
+                        <button class="color-btn" data-color="#45B7D1" style="--btn-color: #45B7D1"></button>
+                        <button class="color-btn" data-color="#96CEB4" style="--btn-color: #96CEB4"></button>
+                        <button class="color-btn" data-color="#FFEAA7" style="--btn-color: #FFEAA7"></button>
+                        <button class="color-btn" data-color="#DDA0DD" style="--btn-color: #DDA0DD"></button>
+                        <button class="color-btn" data-color="#FF8C69" style="--btn-color: #FF8C69"></button>
+                        <button class="color-btn" data-color="#2C3E50" style="--btn-color: #2C3E50"></button>
+                    </div>
+                    <div class="custom-color-wrap">
+                        <input type="color" id="custom-color" value="#FF6B6B">
+                        <span>커스텀</span>
+                    </div>
+                </div>
+
+                <div class="size-section">
+                    <label>브러시 크기</label>
+                    <div class="size-slider-wrap">
+                        <input type="range" id="pen-size" min="1" max="20" value="5">
+                        <span class="size-value">5px</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tools-panel">
+                <div class="panel-title">
+                    <i class="fas fa-toolbox"></i>
+                    <span>도구</span>
+                </div>
+                
+                <div class="tool-grid">
+                    <button class="tool-item active" id="pen-tool">
+                        <i class="fas fa-pen"></i>
+                        <span>펜</span>
+                    </button>
+                    <button class="tool-item" id="eraser">
+                        <i class="fas fa-eraser"></i>
+                        <span>지우개</span>
+                    </button>
+                    <button class="tool-item" id="clear">
+                        <i class="fas fa-trash-can"></i>
+                        <span>전체삭제</span>
+                    </button>
+                </div>
+                
+                <div class="eraser-size-section" id="eraser-size-section">
+                    <label>지우개 크기</label>
+                    <div class="size-slider-wrap">
+                        <input type="range" id="eraser-size" min="10" max="80" value="20">
+                        <span class="eraser-size-value">20px</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 메인 컨텐츠 -->
+        <main class="main-content">
+            <div class="canvas-container">
+                <div class="canvas-header">
+                    <h2><i class="fas fa-palette"></i> 캔버스</h2>
+                    <p>자유롭게 그림을 그려보세요. 당신의 그림이 음악이 됩니다.</p>
+                </div>
+                <div id="canvas-wrap">
+                    <canvas id="canvas" width="900" height="500"></canvas>
+                    <div class="canvas-hint" id="canvas-hint">
+                        <i class="fas fa-hand-pointer"></i>
+                        <span>여기에 그림을 그려주세요</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="generate-section">
+                <div class="api-input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="api-key" placeholder="Replicate API Key">
+                    <button class="show-key-btn" id="show-key">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button class="generate-btn" id="generate-music">
+                    <span class="btn-content">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>음악 생성</span>
+                    </span>
+                    <span class="btn-loader">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>생성 중...</span>
+                    </span>
+                </button>
+            </div>
+
+            <div id="music-result" class="music-result"></div>
+        </main>
+    </div>
+</body>
 </html>
