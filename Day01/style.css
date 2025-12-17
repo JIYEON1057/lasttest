@@ -176,54 +176,26 @@ body {
 .action-bar {
     display: flex;
     gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-.api-input {
-    flex: 1;
+.free-badge {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: var(--bg-card);
-    padding: 14px 20px;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(16, 185, 129, 0.2));
+    padding: 12px 20px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    transition: all 0.3s;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    color: #22D3EE;
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
-.api-input:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-}
-
-.api-input i {
-    color: var(--text-muted);
-}
-
-.api-input input {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 0.95rem;
-    font-family: inherit;
-    background: transparent;
-    color: var(--text);
-}
-
-.api-input input::placeholder {
-    color: var(--text-muted);
-}
-
-.toggle-visibility {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s;
-}
-
-.toggle-visibility:hover {
-    color: var(--accent);
+.free-badge i {
+    color: #10B981;
 }
 
 .generate-btn {

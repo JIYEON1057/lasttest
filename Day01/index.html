@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Art2Music | 그림으로 음악 만들기</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script defer src="main.js?v=2"></script>
+    <script defer src="main.js"></script>
 </head>
 <body>
     <div class="app">
@@ -39,17 +39,13 @@
 
                 <!-- 생성 버튼 -->
                 <div class="action-bar">
-                    <div class="api-input">
-                        <i class="fas fa-key"></i>
-                        <input type="password" id="api-key" placeholder="Replicate API Key 입력">
-                        <button class="toggle-visibility" id="show-key">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
                     <button class="generate-btn" id="generate-music">
                         <i class="fas fa-wand-magic-sparkles"></i>
                         <span>음악 만들기</span>
                     </button>
+                    <div class="free-badge">
+                        <i class="fas fa-gift"></i> 무료 - API 키 필요 없음!
+                    </div>
                 </div>
 
                 <!-- 결과 -->
