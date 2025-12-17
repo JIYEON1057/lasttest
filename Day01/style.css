@@ -511,3 +511,204 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* ===== Spotify Section ===== */
+.spotify-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-top: 10px;
+}
+
+.spotify-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1DB954;
+}
+
+.spotify-header i {
+    font-size: 1.4rem;
+}
+
+.spotify-inputs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.spotify-inputs .input-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.spotify-inputs label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.spotify-inputs input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.spotify-inputs input:focus {
+    outline: none;
+    border-color: #1DB954;
+    box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2);
+}
+
+.spotify-inputs input::placeholder {
+    color: var(--text-muted);
+}
+
+.secret-input {
+    position: relative;
+    display: flex;
+}
+
+.secret-input input {
+    padding-right: 45px;
+}
+
+.toggle-secret {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.toggle-secret:hover {
+    color: #1DB954;
+}
+
+.spotify-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #1DB954, #1ed760);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.spotify-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(29, 185, 84, 0.4);
+}
+
+.spotify-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spotify-hint {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.spotify-hint a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.spotify-hint a:hover {
+    color: #1DB954;
+}
+
+.spotify-hint a i {
+    margin-right: 5px;
+}
+
+/* Spotify 결과 카드 */
+.spotify-track {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-card-hover);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    transition: transform 0.2s;
+}
+
+.spotify-track:hover {
+    transform: translateX(5px);
+}
+
+.spotify-track img {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.spotify-track-info {
+    flex: 1;
+}
+
+.spotify-track-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.spotify-track-artist {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.spotify-track audio {
+    width: 200px;
+    height: 32px;
+}
+
+.spotify-track-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #1DB954;
+    border-radius: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.spotify-track-link:hover {
+    background: #1ed760;
+    transform: scale(1.05);
+}

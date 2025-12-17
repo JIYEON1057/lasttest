@@ -48,8 +48,41 @@
                     </div>
                 </div>
 
+                <!-- Spotify 추천 섹션 -->
+                <div class="spotify-section">
+                    <div class="spotify-header">
+                        <i class="fab fa-spotify"></i>
+                        <span>Spotify 노래 추천</span>
+                    </div>
+                    <div class="spotify-inputs">
+                        <div class="input-group">
+                            <label for="spotify-client-id">Client ID</label>
+                            <input type="text" id="spotify-client-id" placeholder="Spotify Client ID 입력">
+                        </div>
+                        <div class="input-group">
+                            <label for="spotify-client-secret">Client Secret</label>
+                            <div class="secret-input">
+                                <input type="password" id="spotify-client-secret" placeholder="Client Secret 입력">
+                                <button class="toggle-secret" id="toggle-secret">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="spotify-btn" id="recommend-music">
+                        <i class="fab fa-spotify"></i>
+                        <span>노래 추천 받기</span>
+                    </button>
+                    <p class="spotify-hint">
+                        <a href="https://developer.spotify.com/dashboard" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Spotify 개발자 대시보드에서 API 키 발급
+                        </a>
+                    </p>
+                </div>
+
                 <!-- 결과 -->
                 <div id="music-result" class="music-result"></div>
+                <div id="spotify-result" class="music-result"></div>
             </div>
 
             <!-- 도구 패널 -->
