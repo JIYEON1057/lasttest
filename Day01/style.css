@@ -712,3 +712,14 @@ body {
     background: #1ed760;
     transform: scale(1.05);
 }
+
+/* Spotify Embed Player */
+.spotify-embed-track {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.spotify-embed-track iframe {
+    display: block;
+}

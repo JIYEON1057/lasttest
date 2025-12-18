@@ -674,16 +674,32 @@ window.addEventListener('DOMContentLoaded', () => {
     const recommendBtn = document.getElementById('recommend-music');
     const spotifyResult = document.getElementById('spotify-result');
 
-    // 비밀번호 보기/숨기기
-    toggleSecretBtn.addEventListener('click', () => {
-        if (spotifyClientSecret.type === 'password') {
-            spotifyClientSecret.type = 'text';
-            toggleSecretBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        } else {
-            spotifyClientSecret.type = 'password';
-            toggleSecretBtn.innerHTML = '<i class="fas fa-eye"></i>';
-        }
+    console.log('Spotify elements loaded:', { 
+        spotifyClientId: !!spotifyClientId, 
+        spotifyClientSecret: !!spotifyClientSecret,
+        toggleSecretBtn: !!toggleSecretBtn,
+        recommendBtn: !!recommendBtn, 
+        spotifyResult: !!spotifyResult 
     });
+
+    // 요소가 없으면 중단
+    if (!recommendBtn) {
+        console.error('recommend-music 버튼을 찾을 수 없습니다');
+        return;
+    }
+
+    // 비밀번호 보기/숨기기
+    if (toggleSecretBtn) {
+        toggleSecretBtn.addEventListener('click', () => {
+            if (spotifyClientSecret.type === 'password') {
+                spotifyClientSecret.type = 'text';
+                toggleSecretBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                spotifyClientSecret.type = 'password';
+                toggleSecretBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+    }
 
     // 색상 기반 장르/분위기 매핑
     function getSpotifySearchParams() {
@@ -760,46 +776,73 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Spotify API 토큰 얻기
     async function getSpotifyToken(clientId, clientSecret) {
-        const response = await fetch('https://accounts.spotify.com/api/token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
-            },
-            body: 'grant_type=client_credentials'
-        });
-        
-        if (!response.ok) {
-            throw new Error('Spotify 인증 실패. Client ID와 Secret을 확인해주세요.');
+        console.log('토큰 요청 시작...');
+        try {
+            const response = await fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                },
+                body: 'grant_type=client_credentials'
+            });
+            
+            console.log('토큰 응답 상태:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('토큰 에러 응답:', errorText);
+                throw new Error('Spotify 인증 실패. Client ID와 Secret을 확인해주세요.');
+            }
+            
+            const data = await response.json();
+            console.log('토큰 발급 성공!');
+            return data.access_token;
+        } catch (error) {
+            console.error('토큰 발급 중 에러:', error);
+            throw error;
         }
-        
-        const data = await response.json();
-        return data.access_token;
     }
 
     // Spotify 검색
     async function searchSpotify(token, query) {
-        const response = await fetch(
-            `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        console.log('검색 시작:', query);
+        try {
+            const response = await fetch(
+                `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=5`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 }
+            );
+            
+            console.log('검색 응답 상태:', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('검색 에러 응답:', errorText);
+                throw new Error('Spotify 검색 실패');
             }
-        );
-        
-        if (!response.ok) {
-            throw new Error('Spotify 검색 실패');
+            
+            const data = await response.json();
+            console.log('검색 결과:', data.tracks.items.length, '개');
+            return data.tracks.items;
+        } catch (error) {
+            console.error('검색 중 에러:', error);
+            throw error;
         }
-        
-        const data = await response.json();
-        return data.tracks.items;
     }
 
     // 노래 추천 버튼 클릭
     recommendBtn.addEventListener('click', async () => {
+        console.log('노래 추천 버튼 클릭됨!');
+        
         const clientId = spotifyClientId.value.trim();
         const clientSecret = spotifyClientSecret.value.trim();
+        
+        console.log('Client ID:', clientId ? '입력됨' : '없음');
+        console.log('Client Secret:', clientSecret ? '입력됨' : '없음');
         
         if (!clientId || !clientSecret) {
             showSpotifyResult('error', 'Spotify Client ID와 Client Secret을 입력해주세요.');
@@ -808,6 +851,7 @@ window.addEventListener('DOMContentLoaded', () => {
         
         // 캔버스 확인
         const params = getSpotifySearchParams();
+        console.log('검색 파라미터:', params);
         
         recommendBtn.disabled = true;
         recommendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 검색 중...';
@@ -836,24 +880,21 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
             
             tracks.forEach(track => {
-                const albumImage = track.album.images[2]?.url || track.album.images[0]?.url || '';
-                const previewUrl = track.preview_url;
-                const spotifyUrl = track.external_urls.spotify;
+                const trackId = track.id;
                 const artistNames = track.artists.map(a => a.name).join(', ');
                 
                 html += `
-                    <div class="spotify-track">
-                        <img src="${albumImage}" alt="${track.name}">
-                        <div class="spotify-track-info">
-                            <div class="spotify-track-name">${track.name}</div>
-                            <div class="spotify-track-artist">${artistNames}</div>
-                        </div>
-                        ${previewUrl ? 
-                            `<audio controls src="${previewUrl}"></audio>` : 
-                            `<a href="${spotifyUrl}" target="_blank" class="spotify-track-link">
-                                <i class="fab fa-spotify"></i> Spotify에서 듣기
-                            </a>`
-                        }
+                    <div class="spotify-embed-track">
+                        <iframe 
+                            style="border-radius:12px" 
+                            src="https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0" 
+                            width="100%" 
+                            height="152" 
+                            frameBorder="0" 
+                            allowfullscreen="" 
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                            loading="lazy">
+                        </iframe>
                     </div>
                 `;
             });
