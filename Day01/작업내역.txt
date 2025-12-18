@@ -4,73 +4,76 @@
 
 1. Day01/index.html
    - <!DOCTYPE html> 문서 구조 정립
-   - 캔버스(1000x600) UI 구성: 그림판 영역 설정
+   - 캔버스(800x450) UI 구성: 그림판 영역 설정
    - 도구모음(toolbar) 구성:
-     * 색상 버튼 7개 (빨강, 주황, 노랑, 초록, 파랑, 보라, 검정)
+     * 색상 버튼 10개 (다양한 색상 팔레트)
      * 커스텀 컬러 선택기(input type="color")
-     * 지우개 버튼
-     * 지우개 크기 선택 드롭다운 (얇게/보통/굵게/매우 굵게)
+     * 펜 도구 / 지우개 도구 전환
+     * 펜 크기 슬라이더 (1~30px)
+     * 지우개 크기 슬라이더 (10~80px)
      * 전체 지우기 버튼
-   - 음악 생성 버튼 및 결과 표시 영역
+   - 음악 생성 버튼 및 결과 표시 영역 (버튼 바로 아래 배치)
    - Spotify 노래 추천 섹션:
      * Client ID / Client Secret 입력 필드
+     * 비밀번호 보기/숨기기 토글
      * 노래 추천 받기 버튼
      * Spotify Embed 플레이어 표시 영역
-   - 캔버스를 div#canvas-wrap으로 감싸서 미리보기 오버레이와 캔버스를 정확히 겹침
 
-2. Day01/main.js
-   - 캔버스 초기화: 흰색 배경으로 설정
-   - 색상 기능:
-     * 미리정의된 7가지 색상 버튼 클릭 시 펜 색상 변경
-     * 커스텀 컬러 선택기로 자유로운 색상 선택 가능
-   - 지우개 기능:
-     * 지우개 버튼 클릭 시 지우개 모드 전환
-     * 지우개 크기 드롭다운으로 지우는 범위 조절 (10~80px)
-     * 원형 미리보기 오버레이(preview canvas)로 지우는 범위를 사전에 표시
-     * clearRect()와 clip()을 조합하여 원형 영역을 정확하게 투명하게 지움
-   - 전체 지우기:
-     * 캔버스 전체를 흰색으로 다시 칠해 초기화
-   - 마우스 이벤트:
-     * 캔버스에서 마우스 누르면 드로잉 시작
-     * 마우스 드래그로 연속적으로 선(펜) 또는 지우개 적용
-     * 마우스가 캔버스 밖으로 나갔다가 다시 들어와도 누르고 있으면 드로잉 계속
-     * mousemove 이벤트로 부드러운 드로잉 실현
+2. Day01/main.js (대학교 1학년 수준 OOP 리팩토링)
    
-   - Web Audio API 음악 생성 기능 (무료):
-     * 캔버스 색상 분석 (빨강, 주황, 노랑, 초록, 파랑, 보라 비율)
-     * 색상별 무드 판단 (밝은/어두운/차분한/에너지틱한)
-     * 색상 기반 음계 및 코드 결정
-     * 오실레이터(sine, triangle, sawtooth)로 멜로디 생성
-     * 패드 사운드로 배경음 생성
-     * 10초간 자동 생성 음악 재생
-     * 정지 버튼으로 음악 중단 가능
+   [클래스 구조]
+   - Art2MusicApp: 메인 애플리케이션 클래스
+   - CanvasManager: 캔버스 드로잉 관리 클래스
+   - MusicGenerator: Web Audio 음악 생성 클래스
+   - SpotifyAPI: Spotify API 통신 클래스
+   - UIController: UI 이벤트 관리 클래스
+   - ColorAnalyzer: 색상 분석 유틸리티 클래스
    
-   - Spotify 노래 추천 기능:
-     * Client Credentials Flow로 Spotify API 인증
-     * 캔버스 색상 분석 → 무드 키워드 추출
-     * Spotify Search API로 무드에 맞는 노래 검색
-     * Spotify Embed 플레이어로 페이지 내에서 직접 노래 재생 가능
-     * 최대 3곡 추천 표시
+   [설정 상수]
+   - CONFIG: 캔버스, 오디오 설정 상수
+   - MUSICAL_SCALES: 6가지 음계 (major, minor, pentatonic, blues, dorian, mixolydian)
+   - CHORD_PROGRESSIONS: 6가지 코드 진행 패턴
+   - MELODY_PATTERNS: 6가지 멜로디 패턴
+   - RHYTHM_PATTERNS: 6가지 리듬 패턴
+   - MOOD_DESCRIPTIONS: 분위기별 텍스트 매핑
+   
+   [캔버스 기능]
+   - 펜 드로잉 (색상, 크기 조절)
+   - 지우개 (원형 클리핑 방식)
+   - 터치 이벤트 지원
+   - 캔버스 밖에서도 드로잉 유지
+   
+   [향상된 음악 생성 기능]
+   - 색상별 완전히 다른 음악 스타일:
+     * 빨강: Mixolydian 스케일, 드라마틱 멜로디, 에너지틱 리듬
+     * 파랑: Dorian 스케일, 부드러운 멜로디, 차분한 리듬
+     * 초록: Pentatonic 스케일, 웨이브 멜로디, 자연스러운 흐름
+     * 노랑: Major 스케일, 상승 멜로디, 싱코페이션 리듬
+     * 보라: Blues 스케일, 웨이브 멜로디, 왈츠 리듬
+   - 코드 진행 시스템 (I-IV-V-I 등)
+   - 프레이즈 기반 다이나믹스 (강약 변화)
+   - 리버브 + LFO 이펙트
+   - 색상 기반 아르페지오
+   - 분위기별 배경 사운드
+   
+   [Spotify 기능]
+   - Client Credentials Flow 인증
+   - 색상 → 무드 → 검색 쿼리 변환
+   - Spotify Embed 플레이어로 페이지 내 재생
 
 3. Day01/style.css
    - 다크 테마 UI 디자인
-   - 캔버스 및 도구모음 스타일링
-   - 색상 버튼 hover 효과 및 active 상태 표시
-   - 음악 생성 결과 영역 스타일
-   - Spotify 섹션 스타일:
-     * API 키 입력 필드 디자인
-     * Spotify 브랜드 컬러(#1DB954) 적용
-     * Embed 플레이어 컨테이너 스타일
+   - 캔버스 및 도구 패널 스타일링
+   - 슬라이더 커스텀 스타일
+   - Spotify 섹션 스타일 (브랜드 컬러 #1DB954)
+   - Embed 플레이어 스타일
 
 === 기술 구현 세부사항 ===
-- HTML5 Canvas API 사용
-- Canvas 2D Context의 메서드: fillRect, clearRect, clip, stroke, arc 등
-- globalCompositeOperation으로 투명한 배경 처리
-- 마우스 이벤트: mousedown, mouseup, mousemove, mouseleave, mouseenter
-- 오버레이 캔버스를 이용한 미리보기 표시 (pointerEvents: none으로 이벤트 투과)
-- Web Audio API: OscillatorNode, GainNode, AudioContext
+- HTML5 Canvas API
+- Web Audio API: OscillatorNode, GainNode, BiquadFilterNode, DelayNode, ConvolverNode
 - Spotify Web API: Client Credentials Flow, Search Endpoint
-- Spotify Embed Player: iframe으로 페이지 내 음악 재생
+- ES6+ Class 문법, JSDoc 주석
+- 객체지향 프로그래밍 (OOP) 패턴
 
 === 배포 정보 ===
 - GitHub Repository: https://github.com/JIYEON1057/lasttest
@@ -81,18 +84,22 @@
 - "무료 Web Audio API 기반 음악 생성으로 변경"
 - "Spotify 노래 추천 기능 추가"
 - "패이지 내에서 음악 듣기 가능" (Spotify Embed 플레이어)
+- "노래 만들기 품질 개선" (OOP 리팩토링 + 향상된 음악 생성)
+- "음악 생성 완료버튼 위치 변경"
 
 === 완료된 작업 ===
-✅ 그림판 기능 (펜, 색상, 지우개)
-✅ 캔버스 색상 분석
-✅ Web Audio API 기반 무료 음악 생성
+✅ 그림판 기능 (펜, 색상, 지우개, 크기 조절)
+✅ 캔버스 색상 분석 (ColorAnalyzer 클래스)
+✅ 향상된 Web Audio 음악 생성 (6가지 스케일, 코드 진행, 다이나믹스)
 ✅ Spotify API 연동 (사용자 API 키 입력 방식)
 ✅ Spotify Embed 플레이어로 페이지 내 음악 재생
+✅ 대학교 1학년 수준 OOP 코드 구조
 ✅ GitHub Pages 배포
+✅ UI 레이아웃 개선 (음악 결과 버튼 바로 아래 배치)
 
 === 사용 방법 ===
-1. 캔버스에 그림 그리기
-2. "음악 생성하기" 버튼 → Web Audio로 즉석 음악 생성
+1. 캔버스에 그림 그리기 (색상에 따라 다른 음악 생성)
+2. "음악 만들기" 버튼 → 15초간 자동 생성 음악 재생
 3. Spotify 추천:
    - Spotify Developer에서 앱 생성 (https://developer.spotify.com)
    - Client ID와 Client Secret 입력
